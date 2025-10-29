@@ -55,12 +55,10 @@ const Header: React.FC<HeaderProps> = ({ user, currentView, onViewChange }) => {
       {/* Center Section: Navigation */}
       <nav className="flex items-center gap-2 bg-brand-primary p-1 rounded-xl">
         <button onClick={() => onViewChange('deliveries')} className={navButtonClasses('deliveries')}>
-          <BoxIcon className="w-4 h-5" />
           <span className="font-semibold text-sm">Deliveries</span>
         </button>
         <button onClick={() => onViewChange('staff')} className={navButtonClasses('staff')}>
-          <UsersIcon className="w-4 h-5" />
-          <span className="font-semibold text-sm">Staff</span>
+          <span className="font-semibold text-sm">Staffs</span>
         </button>
       </nav>
 

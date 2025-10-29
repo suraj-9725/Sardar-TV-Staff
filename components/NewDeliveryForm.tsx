@@ -8,24 +8,78 @@ interface NewDeliveryFormProps {
   onClose: () => void;
 }
 
+// Helper function to resize and compress the image
+const resizeImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const MAX_WIDTH = 512;
+        const MAX_HEIGHT = 512;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            return reject(new Error("Could not get canvas context"));
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to JPEG with 70% quality for compression
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(dataUrl);
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+
 const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
   const [productName, setProductName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [address, setAddress] = useState('');
-  const [branch, setBranch] = useState<Branch>('Sardar Patel Chowk');
+  const [branch, setBranch] = useState<Branch>('Nikol');
   const [notes, setNotes] = useState('');
   const [productImage, setProductImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProductImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setIsProcessingImage(true);
+      setError(null);
+      try {
+        const resizedDataUrl = await resizeImage(file);
+        setProductImage(resizedDataUrl);
+      } catch (err) {
+        console.error("Image processing failed:", err);
+        setError("Failed to process image. Please try a different file.");
+        setProductImage(null);
+      } finally {
+        setIsProcessingImage(false);
+      }
     }
   };
   
@@ -44,7 +98,7 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
       setProductName('');
       setCustomerName('');
       setAddress('');
-      setBranch('Sardar Patel Chowk');
+      setBranch('Nikol');
       setNotes('');
       setProductImage(null);
       // Reset file input
@@ -77,7 +131,7 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             className="w-full bg-brand-accent text-brand-text p-3 rounded-md border border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-blue"
-            disabled={isLoading}
+            disabled={isLoading || isProcessingImage}
           />
           <input
             type="text"
@@ -85,7 +139,7 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             className="w-full bg-brand-accent text-brand-text p-3 rounded-md border border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-blue"
-            disabled={isLoading}
+            disabled={isLoading || isProcessingImage}
           />
           <input
             type="text"
@@ -93,7 +147,7 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className="w-full bg-brand-accent text-brand-text p-3 rounded-md border border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-blue md:col-span-3"
-            disabled={isLoading}
+            disabled={isLoading || isProcessingImage}
           />
         </div>
 
@@ -109,7 +163,7 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
                     checked={branch === option}
                     onChange={() => setBranch(option)}
                     className="h-4 w-4 text-brand-blue border-gray-300 focus:ring-brand-blue"
-                    disabled={isLoading}
+                    disabled={isLoading || isProcessingImage}
                 />
                 <span className="text-brand-text">{option}</span>
                 </label>
@@ -123,7 +177,7 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
             onChange={(e) => setNotes(e.target.value)}
             className="w-full bg-brand-accent text-brand-text p-3 rounded-md border border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-blue"
             rows={3}
-            disabled={isLoading}
+            disabled={isLoading || isProcessingImage}
         />
 
         {productImage && (
@@ -131,9 +185,15 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
             <img src={productImage} alt="Product Preview" className="w-full h-full object-cover" />
             <button
               type="button"
-              onClick={() => setProductImage(null)}
-              className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-75 transition-colors"
+              onClick={() => {
+                if (isProcessingImage) return;
+                setProductImage(null);
+                const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+              }}
+              className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-75 transition-colors disabled:cursor-not-allowed"
               aria-label="Remove image"
+              disabled={isProcessingImage}
             >
               <XIcon className="w-4 h-4" />
             </button>
@@ -145,16 +205,18 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
         <div className="flex flex-wrap items-center gap-4">
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isProcessingImage}
             className="bg-brand-blue hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-brand-accent disabled:cursor-not-allowed"
           >
             {isLoading ? 'Adding...' : 'Add Delivery'}
           </button>
-          <label htmlFor="image-upload" className="flex items-center bg-brand-accent hover:bg-opacity-80 text-brand-text-secondary font-bold py-3 px-6 rounded-lg transition duration-300 cursor-pointer">
+          <label htmlFor="image-upload" className={`flex items-center bg-brand-accent text-brand-text-secondary font-bold py-3 px-6 rounded-lg transition duration-300 ${isProcessingImage ? 'cursor-wait bg-opacity-50' : 'hover:bg-opacity-80 cursor-pointer'}`}>
             <ImageIcon className="w-5 h-5 mr-2" />
-            <span>{productImage ? 'Change Image' : 'Add Image'}</span>
+            <span>
+                {isProcessingImage ? 'Processing...' : productImage ? 'Change Image' : 'Add Image'}
+            </span>
           </label>
-          <input id="image-upload" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
+          <input id="image-upload" type="file" className="hidden" onChange={handleImageChange} accept="image/*" disabled={isProcessingImage} />
         </div>
       </form>
     </div>

@@ -3,7 +3,8 @@ import { Timestamp } from 'firebase/firestore';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
-export type AppUser = firebase.auth.User;
+// Fix: Corrected AppUser type to firebase.User for compat library to resolve "no exported member 'User'" error.
+export type AppUser = firebase.User;
 
 export enum DeliveryStatus {
   NEW = 'New',
@@ -12,7 +13,7 @@ export enum DeliveryStatus {
   DELIVERED = 'Delivered',
 }
 
-export type Branch = 'Sardar Patel Chowk' | 'Nikol';
+export type Branch = 'Nikol' | 'Sardar Patel Chowk';
 
 export interface Delivery {
   id: string;
@@ -35,4 +36,6 @@ export interface Staff {
   name: string;
   email: string;
   phone: string;
+  // Fix: Added 'role' property to fix "Property 'role' does not exist on type 'Staff'" error in StaffList.tsx.
+  role: string;
 }

@@ -12,4 +12,4 @@ export const DELIVERY_STATUS_OPTIONS = [
   DeliveryStatus.DELIVERED,
 ];
 
-export const BRANCH_OPTIONS: Branch[] = ['Sardar Patel Chowk', 'Nikol'];
+export const BRANCH_OPTIONS: Branch[] = ['Nikol', 'Sardar Patel Chowk'];
