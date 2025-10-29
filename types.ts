@@ -1,7 +1,9 @@
 import { Timestamp } from 'firebase/firestore';
-import { User } from 'firebase/auth';
+// Fix: Import User type from firebase/compat/app
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
-export type AppUser = User;
+export type AppUser = firebase.auth.User;
 
 export enum DeliveryStatus {
   NEW = 'New',

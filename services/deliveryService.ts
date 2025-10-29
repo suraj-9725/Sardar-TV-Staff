@@ -1,4 +1,6 @@
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+// Fix: Removed v9 firestore imports
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
 import { db } from './firebase';
 import { FIRESTORE_COLLECTIONS } from '../constants';
 import { DeliveryStatus, Branch } from '../types';
@@ -13,19 +15,23 @@ interface NewDeliveryData {
 }
 
 export const addDelivery = async (deliveryData: NewDeliveryData) => {
-  await addDoc(collection(db, FIRESTORE_COLLECTIONS.DELIVERIES), {
+  // Fix: Use v8/compat syntax for adding a document
+  await db.collection(FIRESTORE_COLLECTIONS.DELIVERIES).add({
     ...deliveryData,
     status: DeliveryStatus.NEW,
-    createdAt: serverTimestamp(),
+    // Fix: Use v8/compat syntax for serverTimestamp
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
 };
 
 export const updateDeliveryStatus = async (deliveryId: string, status: DeliveryStatus, userEmail: string | null) => {
-  const deliveryRef = doc(db, FIRESTORE_COLLECTIONS.DELIVERIES, deliveryId);
-  await updateDoc(deliveryRef, { 
+  // Fix: Use v8/compat syntax for updating a document
+  const deliveryRef = db.collection(FIRESTORE_COLLECTIONS.DELIVERIES).doc(deliveryId);
+  await deliveryRef.update({ 
     status,
     lastUpdatedBy: userEmail,
-    updatedAt: serverTimestamp(),
+    // Fix: Use v8/compat syntax for serverTimestamp
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
 };
 
@@ -37,15 +43,18 @@ interface UpdateDeliveryData {
 }
 
 export const updateDeliveryDetails = async (deliveryId: string, deliveryData: UpdateDeliveryData, userEmail: string | null) => {
-  const deliveryRef = doc(db, FIRESTORE_COLLECTIONS.DELIVERIES, deliveryId);
-  await updateDoc(deliveryRef, {
+  // Fix: Use v8/compat syntax for updating a document
+  const deliveryRef = db.collection(FIRESTORE_COLLECTIONS.DELIVERIES).doc(deliveryId);
+  await deliveryRef.update({
     ...deliveryData,
     lastUpdatedBy: userEmail,
-    updatedAt: serverTimestamp(),
+    // Fix: Use v8/compat syntax for serverTimestamp
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
 };
 
 export const deleteDelivery = async (deliveryId: string) => {
-  const deliveryRef = doc(db, FIRESTORE_COLLECTIONS.DELIVERIES, deliveryId);
-  await deleteDoc(deliveryRef);
+  // Fix: Use v8/compat syntax for deleting a document
+  const deliveryRef = db.collection(FIRESTORE_COLLECTIONS.DELIVERIES).doc(deliveryId);
+  await deliveryRef.delete();
 };

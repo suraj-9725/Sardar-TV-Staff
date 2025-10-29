@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+// Fix: Removed incorrect 'onAuthStateChanged' and 'User' imports. Auth logic is now instance-based.
 import { auth } from '../services/firebase';
 import { AppUser } from '../types';
 
@@ -9,7 +9,8 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: User | null) => {
+    // Fix: Use the onAuthStateChanged method from the auth instance
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       setUser(firebaseUser as AppUser);
       setLoading(false);
     });

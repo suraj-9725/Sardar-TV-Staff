@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+// Fix: Removed v9 firestore imports
 import { db } from '../services/firebase';
 import { Delivery } from '../types';
 import { FIRESTORE_COLLECTIONS } from '../constants';
@@ -11,9 +11,10 @@ export function useDeliveries() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, FIRESTORE_COLLECTIONS.DELIVERIES), orderBy('createdAt', 'desc'));
+    // Fix: Use v8/compat syntax for firestore query
+    const q = db.collection(FIRESTORE_COLLECTIONS.DELIVERIES).orderBy('createdAt', 'desc');
     
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribe = q.onSnapshot((querySnapshot) => {
       const deliveriesData: Delivery[] = [];
       querySnapshot.forEach((doc) => {
         deliveriesData.push({ id: doc.id, ...doc.data() } as Delivery);

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+// Fix: Removed v9 'signInWithEmailAndPassword' import
 import { auth } from '../services/firebase';
 import { BoxIcon } from './icons';
 
@@ -15,7 +15,8 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // Fix: Use signInWithEmailAndPassword method from auth instance
+      await auth.signInWithEmailAndPassword(email, password);
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
     } finally {

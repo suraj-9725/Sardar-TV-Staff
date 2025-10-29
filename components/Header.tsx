@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { signOut } from 'firebase/auth';
+// Fix: Removed v9 'signOut' import
 import { auth } from '../services/firebase';
 import { BoxIcon, UsersIcon, UserIcon, ChevronDownIcon, LogOutIcon } from './icons';
 import { AppUser } from '../types';
@@ -16,7 +16,8 @@ const Header: React.FC<HeaderProps> = ({ user, currentView, onViewChange }) => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      // Fix: Use signOut method from auth instance
+      await auth.signOut();
     } catch (error) {
       console.error('Logout failed', error);
       alert('Failed to log out. Please try again.');
