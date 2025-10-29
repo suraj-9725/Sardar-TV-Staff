@@ -1,6 +1,5 @@
-
 // Fix: Removed v9 auth and firestore imports
-import { db, secondaryAuth } from './firebase';
+import { db } from './firebase';
 import { FIRESTORE_COLLECTIONS } from '../constants';
 
 interface NewStaffData {
@@ -18,4 +17,14 @@ export const addStaffMember = async (staffData: Required<NewStaffData>) => {
     role: staffData.role,
     phone: staffData.phone,
   });
+};
+
+export const updateStaffMember = async (id: string, data: { name: string; role: string; phone: string; }) => {
+  const staffRef = db.collection(FIRESTORE_COLLECTIONS.STAFF).doc(id);
+  await staffRef.update(data);
+};
+
+export const deleteStaffMember = async (id: string) => {
+  const staffRef = db.collection(FIRESTORE_COLLECTIONS.STAFF).doc(id);
+  await staffRef.delete();
 };
