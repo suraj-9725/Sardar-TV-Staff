@@ -125,6 +125,8 @@ const DeliveryItem: React.FC<DeliveryItemProps> = ({ delivery, staffMap }) => {
     return timestamp.toDate().toLocaleString();
   }
 
+  const isDelivered = delivery.status === DeliveryStatus.DELIVERED;
+
   return (
     <>
       <div className="bg-brand-secondary p-4 rounded-lg shadow-md transition-all hover:shadow-lg flex flex-col">
@@ -232,26 +234,31 @@ const DeliveryItem: React.FC<DeliveryItemProps> = ({ delivery, staffMap }) => {
                     ref={selectRef}
                     defaultValue={delivery.status}
                     onChange={handleStatusChangeRequest}
-                    className={`w-full p-2 rounded-md font-semibold text-sm border-none focus:outline-none focus:ring-2 focus:ring-brand-blue ${getStatusColor(delivery.status)}`}
+                    disabled={isDelivered}
+                    className={`w-full p-2 rounded-md font-semibold text-sm border-none focus:outline-none focus:ring-2 focus:ring-brand-blue ${getStatusColor(delivery.status)} disabled:opacity-70 disabled:cursor-not-allowed`}
                 >
                     {DELIVERY_STATUS_OPTIONS.map(status => (
                         <option key={status} value={status}>{status}</option>
                     ))}
                 </select>
-                <button
-                    onClick={() => setIsEditing(true)}
-                    className="p-2 bg-brand-accent hover:bg-gray-300 text-brand-text-secondary rounded-lg transition duration-300"
-                    aria-label="Edit delivery details"
-                >
-                    <PencilIcon className="w-5 h-5"/>
-                </button>
-                 <button
-                    onClick={() => setIsDeleteConfirmOpen(true)}
-                    className="p-2 bg-brand-red hover:bg-red-700 text-white rounded-lg transition duration-300"
-                    aria-label="Delete delivery"
-                >
-                    <TrashIcon className="w-5 h-5"/>
-                </button>
+                {!isDelivered && (
+                  <>
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="p-2 bg-brand-accent hover:bg-gray-300 text-brand-text-secondary rounded-lg transition duration-300"
+                        aria-label="Edit delivery details"
+                    >
+                        <PencilIcon className="w-5 h-5"/>
+                    </button>
+                     <button
+                        onClick={() => setIsDeleteConfirmOpen(true)}
+                        className="p-2 bg-brand-red hover:bg-red-700 text-white rounded-lg transition duration-300"
+                        aria-label="Delete delivery"
+                    >
+                        <TrashIcon className="w-5 h-5"/>
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
