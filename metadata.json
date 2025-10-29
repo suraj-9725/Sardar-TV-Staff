@@ -1,0 +1,5 @@
+{
+  "name": "Sardar TV Staff",
+  "description": "An internal application for staff to track the delivery status of electronic products. Features include real-time delivery updates, status management (New, On Delivery, Delivered, Pending), and staff authentication.",
+  "requestFramePermissions": []
+}
