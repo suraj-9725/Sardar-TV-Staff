@@ -17,8 +17,8 @@ const resizeImage = (file: File): Promise<string> => {
       const img = new Image();
       img.src = event.target?.result as string;
       img.onload = () => {
-        const MAX_WIDTH = 1024;
-        const MAX_HEIGHT = 1024;
+        const MAX_WIDTH = 1536;
+        const MAX_HEIGHT = 1536;
         let width = img.width;
         let height = img.height;
 

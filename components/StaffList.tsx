@@ -1,17 +1,43 @@
-
 import React, { useState } from 'react';
 import { useStaff } from '../hooks/useStaff';
 import Spinner from './Spinner';
-import { UserIcon, PhoneIcon, PlusIcon } from './icons';
+import { UserIcon, PhoneIcon, PlusIcon, TrashIcon } from './icons';
 import { useAuth } from '../hooks/useAuth';
 import AddNewStaffForm from './AddNewStaffForm';
+import ConfirmationModal from './ConfirmationModal';
+import { deleteStaffMember } from '../services/staffService';
+import { Staff } from '../types';
 
 const StaffList: React.FC = () => {
   const { staff, loading, error } = useStaff();
   const { user } = useAuth();
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
 
   const isAdmin = user?.email === 'admin@admin.com';
+
+  const handleDeleteRequest = (member: Staff) => {
+    setSelectedStaff(member);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedStaff(null);
+    setIsDeleteConfirmOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedStaff) return;
+    try {
+      await deleteStaffMember(selectedStaff.id);
+    } catch (error) {
+      console.error("Failed to delete staff member:", error);
+      alert("Failed to delete staff member. Please try again.");
+    } finally {
+      handleCloseModal();
+    }
+  };
 
   if (loading) {
     return <Spinner />;
@@ -54,13 +80,24 @@ const StaffList: React.FC = () => {
                   <PhoneIcon className="w-5 h-5" />
                   <span className="text-sm font-medium">{member.phone}</span>
                 </div>
-                <a
-                  href={`tel:${member.phone}`}
-                  className="flex items-center gap-2 bg-brand-green hover:bg-green-600 text-white font-bold py-2 px-3 rounded-lg transition duration-300 text-sm"
-                >
-                  <PhoneIcon className="w-4 h-4" />
-                  <span>Call</span>
-                </a>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`tel:${member.phone}`}
+                    className="flex items-center gap-2 bg-brand-green hover:bg-green-600 text-white font-bold py-2 px-3 rounded-lg transition duration-300 text-sm"
+                  >
+                    <PhoneIcon className="w-4 h-4" />
+                    <span>Call</span>
+                  </a>
+                  {isAdmin && (
+                     <button
+                        onClick={() => handleDeleteRequest(member)}
+                        className="p-2 bg-brand-red hover:bg-red-700 text-white rounded-lg transition duration-300"
+                        aria-label="Delete staff member"
+                    >
+                        <TrashIcon className="w-5 h-5"/>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -82,6 +119,22 @@ const StaffList: React.FC = () => {
             <AddNewStaffForm onClose={() => setIsFormVisible(false)} />
           </div>
         </>
+      )}
+
+      {selectedStaff && (
+        <ConfirmationModal
+          isOpen={isDeleteConfirmOpen}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmDelete}
+          title="Confirm Deletion"
+          message={
+            <p className="text-base">
+              Are you sure you want to delete the staff member{' '}
+              <strong>{selectedStaff.name}</strong>? This action cannot be undone.
+            </p>
+          }
+          variant="danger"
+        />
       )}
     </>
   );
