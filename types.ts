@@ -13,7 +13,7 @@ export enum DeliveryStatus {
   DELIVERED = 'Delivered',
 }
 
-export type Branch = 'Nikol' | 'Sardar Patel Chowk';
+export type Branch = 'Sardar Patel Chowk' | 'Nikol';
 
 export interface Delivery {
   id: string;

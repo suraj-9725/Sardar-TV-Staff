@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { Staff } from '../types';
 import { FIRESTORE_COLLECTIONS } from '../constants';
@@ -9,9 +10,9 @@ export function useStaff() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const q = db.collection(FIRESTORE_COLLECTIONS.STAFF).orderBy('name', 'asc');
+    const q = query(collection(db, FIRESTORE_COLLECTIONS.STAFF), orderBy('name', 'asc'));
     
-    const unsubscribe = q.onSnapshot((querySnapshot) => {
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const staffData: Staff[] = [];
       querySnapshot.forEach((doc) => {
         staffData.push({ id: doc.id, ...doc.data() } as Staff);

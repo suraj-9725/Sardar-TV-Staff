@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
     // Default to 'deliveries' view
     return (
       <>
-        <h2 className="text-3xl font-bold mb-4 text-brand-text">Delivery Tracker</h2>
+        <h4 className="text-3xl font-bold mb-4 text-brand-text">Delivery Tracker</h2>
 
         <div className="bg-brand-secondary p-3 rounded-xl shadow-sm mb-4">
           <div className="flex flex-wrap items-center gap-2">
