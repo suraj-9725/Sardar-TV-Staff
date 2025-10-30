@@ -20,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [view, setView] = useState<'deliveries' | 'staff'>('deliveries');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<DeliveryStatus | 'all'>('all');
+  const [selectedDate, setSelectedDate] = useState('');
   const [isFormVisible, setIsFormVisible] = useState(false);
 
   const loading = deliveriesLoading || staffLoading;
@@ -40,7 +41,17 @@ const Dashboard: React.FC = () => {
       result = result.filter(delivery => delivery.status === statusFilter);
     }
 
-    // 2. Filter by search query
+    // 2. Filter by date
+    if (selectedDate) {
+      result = result.filter(delivery => {
+        if (!delivery.createdAt) return false;
+        // The input date is 'YYYY-MM-DD'. We format the delivery's timestamp to match.
+        const deliveryDate = delivery.createdAt.toDate().toISOString().split('T')[0];
+        return deliveryDate === selectedDate;
+      });
+    }
+
+    // 3. Filter by search query
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
       result = result.filter(delivery =>
@@ -51,7 +62,7 @@ const Dashboard: React.FC = () => {
     }
     
     return result;
-  }, [deliveries, searchQuery, statusFilter]);
+  }, [deliveries, searchQuery, statusFilter, selectedDate]);
 
   const getFilterButtonClasses = (status: DeliveryStatus | 'all') => {
     const baseClasses = 'py-2 px-4 rounded-lg font-semibold text-sm transition-colors duration-200';
@@ -71,7 +82,7 @@ const Dashboard: React.FC = () => {
       <>
         <h4 className="text-3xl font-bold mb-4 text-brand-text">Delivery Tracker</h4>
 
-        <div className="bg-brand-secondary p-3 rounded-xl shadow-sm mb-4">
+        <div className="bg-brand-secondary p-3 rounded-xl shadow-sm mb-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-brand-text-secondary mr-2 text-sm">Filter by status:</span>
             <button
@@ -89,6 +100,24 @@ const Dashboard: React.FC = () => {
                 {status}
               </button>
             ))}
+          </div>
+          <div className="border-t border-brand-accent/70 pt-3 flex flex-wrap items-center gap-3">
+             <label htmlFor="date-filter" className="font-semibold text-brand-text-secondary text-sm">Filter by exact date:</label>
+             <input
+                id="date-filter"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-brand-primary p-2 rounded-lg border border-brand-accent text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-blue"
+              />
+              {selectedDate && (
+                <button
+                  onClick={() => setSelectedDate('')}
+                  className="text-sm font-semibold text-brand-blue hover:underline"
+                >
+                  Clear Date
+                </button>
+              )}
           </div>
         </div>
 
