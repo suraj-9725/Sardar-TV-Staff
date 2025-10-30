@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { addDelivery } from '../services/deliveryService';
 import { ImageIcon, XIcon } from './icons';
 import { Branch } from '../types';
 import { BRANCH_OPTIONS } from '../constants';
+import { useAuth } from '../hooks/useAuth';
 
 interface NewDeliveryFormProps {
   onClose: () => void;
@@ -15,24 +17,14 @@ const resizeImage = (file: File): Promise<string> => {
     reader.readAsDataURL(file);
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target?.result as string;
+      if (!event.target?.result) {
+        return reject(new Error("Failed to read image file."));
+      }
+      img.src = event.target.result as string;
       img.onload = () => {
-        const MAX_WIDTH = 1536;
-        const MAX_HEIGHT = 1536;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
+        // Reduce dimensions to 50% of the original
+        const width = img.width * 0.5;
+        const height = img.height * 0.5;
 
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -55,6 +47,7 @@ const resizeImage = (file: File): Promise<string> => {
 
 
 const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
+  const { user } = useAuth();
   const [productName, setProductName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [address, setAddress] = useState('');
@@ -90,11 +83,24 @@ const NewDeliveryForm: React.FC<NewDeliveryFormProps> = ({ onClose }) => {
       return;
     }
 
+    if (!user?.email) {
+      setError("You must be logged in to add a delivery.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      await addDelivery({ productName, customerName, address, branch, notes, productImage });
+      // Fix: Removed `creatorEmail` property as it does not exist in the `NewDeliveryData` type.
+      await addDelivery({ 
+        productName, 
+        customerName, 
+        address, 
+        branch, 
+        notes, 
+        productImage,
+      });
       setProductName('');
       setCustomerName('');
       setAddress('');
