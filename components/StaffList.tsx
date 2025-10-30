@@ -24,7 +24,7 @@ const StaffList: React.FC = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-6">
-        <h4 className="text-3xl font-bold text-brand-text">Staff Members</h2>
+        <h4 className="text-3xl font-bold text-brand-text">Staff Members</h4>
         {isAdmin && (
           <button
             onClick={() => setIsFormVisible(true)}
